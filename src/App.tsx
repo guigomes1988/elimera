@@ -174,7 +174,7 @@ export default function App() {
             <img 
               src="/elimera lettering@4x.png" 
               alt="ELIMERA Logo" 
-              className="h-12 w-auto object-contain" 
+              className="h-16 w-auto object-contain" 
               referrerPolicy="no-referrer"
             />
           </motion.div>
@@ -990,7 +990,7 @@ export default function App() {
               <img 
                 src="/elimera lettering@4x.png" 
                 alt="ELIMERA Logo" 
-                className="h-12 w-auto object-contain self-start" 
+                className="h-16 w-auto object-contain self-start" 
                 referrerPolicy="no-referrer"
               />
               <p className="text-[14px] sm:text-[15px] text-[#f4f1e2]/75 font-manrope font-light leading-relaxed max-w-md">
