@@ -1,0 +1,6 @@
+{
+  "name": "ELIMERA Minimalist Hero Section",
+  "description": "Static Minimalist Hero Section for ELIMERA brand, featuring modern layouts, custom typography, gold buttons, and a dark-green aesthetic.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

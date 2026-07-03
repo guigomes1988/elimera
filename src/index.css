@@ -1,0 +1,10 @@
+@import "./styles/fonts.css";
+@import "tailwindcss";
+
+@theme {
+  --font-hello-branch: "Hello Branch", "Hello Branch Regular", "Cormorant Garamond", "Playfair Display", serif;
+  --font-hello-branch-regular: "Hello Branch Regular", "Hello Branch", "Cormorant Garamond", "Playfair Display", serif;
+  --font-manrope: "Manrope", sans-serif;
+  --font-manrope-light: "Manrope", sans-serif;
+}
+
