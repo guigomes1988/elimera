@@ -129,7 +129,7 @@ export default function App() {
   return (
     <div 
       id="app-container" 
-      className="w-full min-h-screen bg-[#2d5642] text-white flex flex-col font-manrope font-light relative overflow-x-hidden select-none"
+      className="w-full min-h-screen bg-[#2d5642] text-white flex flex-col font-manrope font-light relative select-none"
     >
       {/* Hero Section Container matching image visually without distortion */}
       <div 
