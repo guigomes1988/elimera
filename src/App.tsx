@@ -12,6 +12,7 @@ type Product = {
   description: string;
   benefits: string[];
   image: string;
+  checkoutUrl: string;
 };
 
 const PRODUCTS: Product[] = [
@@ -26,7 +27,8 @@ const PRODUCTS: Product[] = [
       "Com ácido hialurônico",
       "Cruelty free, livre de parabenos e petrolatos"
     ],
-    image: "/produto-03.png"
+    image: "/produto-03.png",
+    checkoutUrl: "https://elimera.pay.yampi.com.br/r/5BOEUUU7ZD"
   },
   {
     id: "glow-lift",
@@ -39,7 +41,8 @@ const PRODUCTS: Product[] = [
       "Ácido hialurônico hidratante",
       "Hidratação profunda, cruelty free e livre de parabenos"
     ],
-    image: "/produto-02.png"
+    image: "/produto-02.png",
+    checkoutUrl: "https://elimera.pay.yampi.com.br/r/4URO8S7YTL"
   },
   {
     id: "gold-lift",
@@ -52,7 +55,8 @@ const PRODUCTS: Product[] = [
       "Brilho imediato e toque acetinado",
       "Hidratação profunda, cruelty free e livre de parabenos"
     ],
-    image: "/produto-01.png"
+    image: "/produto-01.png",
+    checkoutUrl: "https://elimera.pay.yampi.com.br/r/ILJMNHRKV0"
   }
 ];
 
@@ -638,16 +642,18 @@ export default function App() {
                 </AnimatePresence>
 
                 <div className="mt-2 pointer-events-auto text-left">
-                  <motion.button 
+                  <motion.a 
                     whileTap={{ scale: 0.98 }}
+                    href={product.checkoutUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
                     onClick={(e) => {
                       e.stopPropagation();
-                      alert(`Você colocou o ${product.name} no carrinho!`);
                     }}
                     className="inline-flex items-center justify-center rounded-full px-8 py-3 text-xs uppercase tracking-widest font-bold bg-transparent text-[#b7995a] border border-[#b7995a] hover:bg-[#b7995a] hover:text-white transition-all duration-300 focus:outline-none"
                   >
                     Comprar agora
-                  </motion.button>
+                  </motion.a>
                 </div>
               </div>
             ))}
