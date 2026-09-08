@@ -28,7 +28,7 @@ const PRODUCTS: Product[] = [
       "Cruelty free, livre de parabenos e petrolatos"
     ],
     image: "/produto-03.png",
-    checkoutUrl: "https://elimera.pay.yampi.com.br/r/5BOEUUU7ZD"
+    checkoutUrl: "https://elimera.pay.yampi.com.br/r/8XVEIIMKLT"
   },
   {
     id: "glow-lift",
@@ -42,7 +42,7 @@ const PRODUCTS: Product[] = [
       "Hidratação profunda, cruelty free e livre de parabenos"
     ],
     image: "/produto-02.png",
-    checkoutUrl: "https://elimera.pay.yampi.com.br/r/4URO8S7YTL"
+    checkoutUrl: "https://elimera.pay.yampi.com.br/r/50BJSNV0QW"
   },
   {
     id: "gold-lift",
@@ -56,7 +56,7 @@ const PRODUCTS: Product[] = [
       "Hidratação profunda, cruelty free e livre de parabenos"
     ],
     image: "/produto-01.png",
-    checkoutUrl: "https://elimera.pay.yampi.com.br/r/ILJMNHRKV0"
+    checkoutUrl: "https://elimera.pay.yampi.com.br/r/4EF7TNQSBD"
   }
 ];
 
