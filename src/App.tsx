@@ -1,8 +1,8 @@
 import { useState, useEffect } from "react";
-import { Menu, X, ArrowRight, ShieldCheck, Sparkles, BookOpen, Clock, AlertCircle, Heart, Gem, FlaskConical, ArrowUpRight, ChevronDown, Truck, RefreshCw, Instagram, Facebook } from "lucide-react";
+import { Menu, X, ArrowRight, ShieldCheck, Sparkles, BookOpen, Clock, AlertCircle, Heart, Gem, FlaskConical, ArrowUpRight, ChevronDown, Truck, RefreshCw, Instagram, Facebook, ShoppingBag, Plus, Minus, Trash2, CheckCircle2 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 
-type NavItem = "Início" | "Sobre" | "Produtos" | "Chancela" | "Políticas";
+type NavItem = "Sobre" | "Produtos" | "Chancela" | "Políticas";
 
 type Product = {
   id: string;
@@ -13,6 +13,13 @@ type Product = {
   benefits: string[];
   image: string;
   checkoutUrl: string;
+  price: number;
+  skuId?: string;
+};
+
+type CartItem = {
+  product: Product;
+  quantity: number;
 };
 
 const PRODUCTS: Product[] = [
@@ -28,7 +35,9 @@ const PRODUCTS: Product[] = [
       "Cruelty free, livre de parabenos e petrolatos"
     ],
     image: "/produto-03.png",
-    checkoutUrl: "https://elimera.pay.yampi.com.br/r/8XVEIIMKLT"
+    checkoutUrl: "https://elimera.pay.yampi.com.br/r/8XVEIIMKLT",
+    price: 89.90,
+    skuId: "BATOMMATTE"
   },
   {
     id: "glow-lift",
@@ -42,7 +51,9 @@ const PRODUCTS: Product[] = [
       "Hidratação profunda, cruelty free e livre de parabenos"
     ],
     image: "/produto-02.png",
-    checkoutUrl: "https://elimera.pay.yampi.com.br/r/50BJSNV0QW"
+    checkoutUrl: "https://elimera.pay.yampi.com.br/r/50BJSNV0QW",
+    price: 149.90,
+    skuId: "GLOWLIFT"
   },
   {
     id: "gold-lift",
@@ -56,12 +67,14 @@ const PRODUCTS: Product[] = [
       "Hidratação profunda, cruelty free e livre de parabenos"
     ],
     image: "/produto-01.png",
-    checkoutUrl: "https://elimera.pay.yampi.com.br/r/4EF7TNQSBD"
+    checkoutUrl: "https://elimera.pay.yampi.com.br/r/4EF7TNQSBD",
+    price: 159.90,
+    skuId: "GOLDLIFT"
   }
 ];
 
 export default function App() {
-  const [activeTab, setActiveTab] = useState<NavItem>("Início");
+  const [activeTab, setActiveTab] = useState<NavItem | null>(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   
   // Interactive UI overlays to handle CTA actions elegantly without navigating away
@@ -71,6 +84,70 @@ export default function App() {
   const [activePolicy, setActivePolicy] = useState<number>(0);
   const [isScrolled, setIsScrolled] = useState(false);
   const [isFooterVisible, setIsFooterVisible] = useState(false);
+
+  // Carrinho de Compras State
+  const [cart, setCart] = useState<CartItem[]>(() => {
+    try {
+      const saved = localStorage.getItem("elimera_cart");
+      return saved ? JSON.parse(saved) : [];
+    } catch {
+      return [];
+    }
+  });
+  const [isCartOpen, setIsCartOpen] = useState(false);
+  const [cardQuantities, setCardQuantities] = useState<Record<string, number>>({});
+
+  useEffect(() => {
+    try {
+      localStorage.setItem("elimera_cart", JSON.stringify(cart));
+    } catch {
+      // ignore
+    }
+  }, [cart]);
+
+  const addToCart = (product: Product, qty: number = 1) => {
+    setCart((prev) => {
+      const existing = prev.find((item) => item.product.id === product.id);
+      if (existing) {
+        return prev.map((item) =>
+          item.product.id === product.id
+            ? { ...item, quantity: item.quantity + qty }
+            : item
+        );
+      }
+      return [...prev, { product, quantity: qty }];
+    });
+    setIsCartOpen(true);
+  };
+
+  const updateCartQuantity = (productId: string, delta: number) => {
+    setCart((prev) =>
+      prev
+        .map((item) => {
+          if (item.product.id === productId) {
+            const newQty = item.quantity + delta;
+            return newQty > 0 ? { ...item, quantity: newQty } : null;
+          }
+          return item;
+        })
+        .filter((item): item is CartItem => item !== null)
+    );
+  };
+
+  const removeFromCart = (productId: string) => {
+    setCart((prev) => prev.filter((item) => item.product.id !== productId));
+  };
+
+  const totalItemsCount = cart.reduce((acc, item) => acc + item.quantity, 0);
+  const cartSubtotal = cart.reduce((acc, item) => acc + item.product.price * item.quantity, 0);
+
+  const handleCheckout = () => {
+    if (cart.length === 0) return;
+
+    // Redireciona para a URL de oferta direta e 100% funcional da Yampi do primeiro produto do carrinho
+    const targetUrl = cart[0].product.checkoutUrl;
+    window.open(targetUrl, "_blank");
+  };
 
   useEffect(() => {
     const handleScroll = () => {
@@ -94,7 +171,14 @@ export default function App() {
     };
   }, []);
 
-  const menuItems: NavItem[] = ["Início", "Sobre", "Produtos", "Chancela", "Políticas"];
+  const menuItems: NavItem[] = ["Sobre", "Produtos", "Chancela", "Políticas"];
+
+  const handleLogoClick = () => {
+    setActiveTab(null);
+    setActiveOverlay(null);
+    setMobileMenuOpen(false);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
 
   const handleNavClick = (item: NavItem) => {
     setActiveTab(item);
@@ -173,7 +257,7 @@ export default function App() {
             id="brand-logo"
             whileHover={{ scale: 1.02 }}
             className="flex items-center cursor-pointer"
-            onClick={() => handleNavClick("Início")}
+            onClick={handleLogoClick}
           >
             <img 
               src="/elimera lettering@4x.png" 
@@ -225,7 +309,7 @@ export default function App() {
             </motion.button>
           </div>
 
-          {/* Mobile Menu Icon */}
+          {/* Mobile Menu Trigger */}
           <div id="mobile-menu-trigger" className="md:hidden flex items-center">
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
@@ -592,9 +676,16 @@ export default function App() {
                     referrerPolicy="no-referrer"
                   />
                 </div>
-                <span className="text-[10px] sm:text-[11px] font-bold text-[#b7995a] uppercase tracking-[0.2em] mb-3">
-                  {product.category}
-                </span>
+                {/* Category & Price */}
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-[10px] sm:text-[11px] font-bold text-[#b7995a] uppercase tracking-[0.2em]">
+                    {product.category}
+                  </span>
+                  <span className="text-lg font-manrope font-semibold text-[#00563F]">
+                    R$ {product.price.toFixed(2).replace('.', ',')}
+                  </span>
+                </div>
+
                 <h3 
                   className="text-2xl sm:text-[28px] font-manrope font-semibold text-[#00563F] mb-2"
                 >
@@ -641,19 +732,55 @@ export default function App() {
                   )}
                 </AnimatePresence>
 
-                <div className="mt-2 pointer-events-auto text-left">
-                  <motion.a 
+                {/* Seletor de Quantidade + Botão Comprar Agora */}
+                <div className="mt-4 pointer-events-auto flex items-center gap-3">
+                  <div className="flex items-center border border-[#00563F]/20 rounded-full px-3 py-2 bg-white/60 shrink-0">
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        const current = cardQuantities[product.id] || 1;
+                        if (current > 1) {
+                          setCardQuantities((prev) => ({ ...prev, [product.id]: current - 1 }));
+                        }
+                      }}
+                      className="text-[#00563F] hover:text-[#b7995a] transition-colors p-1"
+                      aria-label="Diminuir quantidade"
+                    >
+                      <Minus className="w-3.5 h-3.5" />
+                    </button>
+                    <span className="w-7 text-center text-xs font-bold text-[#00563F]">
+                      {cardQuantities[product.id] || 1}
+                    </span>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        const current = cardQuantities[product.id] || 1;
+                        setCardQuantities((prev) => ({ ...prev, [product.id]: current + 1 }));
+                      }}
+                      className="text-[#00563F] hover:text-[#b7995a] transition-colors p-1"
+                      aria-label="Aumentar quantidade"
+                    >
+                      <Plus className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+
+                  <motion.button 
+                    whileHover={{ scale: 1.02, backgroundColor: "#caad6e" }}
                     whileTap={{ scale: 0.98 }}
-                    href={product.checkoutUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
                     onClick={(e) => {
                       e.stopPropagation();
+                      const qty = cardQuantities[product.id] || 1;
+                      let checkoutUrl = product.checkoutUrl;
+                      if (qty > 1) {
+                        checkoutUrl += `?quantity=${qty}`;
+                      }
+                      window.open(checkoutUrl, "_blank");
                     }}
-                    className="inline-flex items-center justify-center rounded-full px-8 py-3 text-xs uppercase tracking-widest font-bold bg-transparent text-[#b7995a] border border-[#b7995a] hover:bg-[#b7995a] hover:text-white transition-all duration-300 focus:outline-none"
+                    className="flex-1 inline-flex items-center justify-center gap-2 rounded-full py-3 px-6 text-xs uppercase tracking-widest font-bold bg-[#b7995a] text-[#1b3b2c] shadow-md hover:shadow-lg transition-all duration-300 focus:outline-none"
                   >
-                    Comprar agora
-                  </motion.a>
+                    <span>Comprar agora</span>
+                    <ArrowRight className="w-4 h-4" />
+                  </motion.button>
                 </div>
               </div>
             ))}
@@ -996,7 +1123,8 @@ export default function App() {
               <img 
                 src="/elimera lettering@4x.png" 
                 alt="ELIMERA Logo" 
-                className="h-16 w-auto object-contain self-start" 
+                className="h-16 w-auto object-contain self-start cursor-pointer" 
+                onClick={handleLogoClick}
                 referrerPolicy="no-referrer"
               />
               <p className="text-[14px] sm:text-[15px] text-[#f4f1e2]/75 font-manrope font-light leading-relaxed max-w-md">
@@ -1089,6 +1217,175 @@ export default function App() {
 
       {/* --- MODAL DETALHADO INTERATIVO DE COMPONENTES DE MARCA / PRODUTOS --- */}
       <AnimatePresence>
+        {/* --- GAVETA DO CARRINHO DE COMPRAS (Cart Drawer Slide-Over) --- */}
+        {isCartOpen && (
+          <motion.div
+            key="cart-drawer-overlay"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex justify-end"
+            onClick={() => setIsCartOpen(false)}
+          >
+            <motion.div
+              initial={{ x: "100%" }}
+              animate={{ x: 0 }}
+              exit={{ x: "100%" }}
+              transition={{ type: "spring", damping: 25, stiffness: 300 }}
+              className="w-full max-w-md bg-[#003829] text-[#f4f1e2] h-full shadow-2xl flex flex-col relative z-10 border-l border-[#b7995a]/20"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* Drawer Header */}
+              <div className="p-6 border-b border-white/10 flex items-center justify-between bg-[#002b1f]">
+                <div className="flex items-center gap-3">
+                  <ShoppingBag className="w-5 h-5 text-[#b7995a]" />
+                  <h3 className="font-manrope font-semibold text-lg uppercase tracking-wider text-[#f4f1e2]">
+                    Seu Carrinho
+                  </h3>
+                  {totalItemsCount > 0 && (
+                    <span className="bg-[#b7995a] text-[#1b3b2c] text-xs font-bold px-2.5 py-0.5 rounded-full">
+                      {totalItemsCount} {totalItemsCount === 1 ? "item" : "itens"}
+                    </span>
+                  )}
+                </div>
+                <button
+                  onClick={() => setIsCartOpen(false)}
+                  className="p-2 text-white/70 hover:text-white transition-colors rounded-full hover:bg-white/10"
+                  aria-label="Fechar carrinho"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              {/* Cart Content / Items List */}
+              <div className="flex-1 overflow-y-auto p-6 space-y-6">
+                {cart.length === 0 ? (
+                  <div className="h-full flex flex-col items-center justify-center text-center text-[#f4f1e2]/70 space-y-4">
+                    <div className="w-16 h-16 rounded-full bg-white/5 flex items-center justify-center text-[#b7995a]">
+                      <ShoppingBag className="w-8 h-8 stroke-[1.5]" />
+                    </div>
+                    <p className="font-manrope font-light text-base text-white/90">
+                      Seu carrinho está vazio.
+                    </p>
+                    <p className="text-xs text-white/60 max-w-xs">
+                      Explore nossos produtos e descubra o cuidado essencial para sua pele.
+                    </p>
+                    <button
+                      onClick={() => {
+                        setIsCartOpen(false);
+                        const section = document.getElementById("produtos-section");
+                        if (section) section.scrollIntoView({ behavior: "smooth" });
+                      }}
+                      className="mt-4 rounded-full px-6 py-2.5 text-xs font-bold uppercase tracking-widest bg-[#b7995a] text-[#1b3b2c] hover:bg-[#caad6e] transition-all duration-300"
+                    >
+                      Ver produtos
+                    </button>
+                  </div>
+                ) : (
+                  cart.map((item) => (
+                    <div
+                      key={item.product.id}
+                      className="flex gap-4 p-4 rounded-lg bg-white/5 border border-white/10 relative group"
+                    >
+                      <img
+                        src={item.product.image}
+                        alt={item.product.name}
+                        className="w-20 h-24 object-cover rounded-md bg-[#edf0eb] shrink-0"
+                        referrerPolicy="no-referrer"
+                      />
+                      <div className="flex-1 flex flex-col justify-between">
+                        <div>
+                          <div className="flex items-start justify-between gap-2">
+                            <div>
+                              <span className="text-[9px] font-bold text-[#b7995a] uppercase tracking-widest block">
+                                {item.product.category}
+                              </span>
+                              <h4 className="font-manrope font-semibold text-base text-white">
+                                {item.product.name}
+                              </h4>
+                            </div>
+                            <button
+                              onClick={() => removeFromCart(item.product.id)}
+                              className="text-white/40 hover:text-red-400 transition-colors p-1"
+                              aria-label="Remover item"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          </div>
+                          <p className="text-xs text-white/70 mt-0.5 line-clamp-1">
+                            {item.product.subtitle}
+                          </p>
+                        </div>
+
+                        <div className="flex items-center justify-between mt-3 pt-2 border-t border-white/10">
+                          {/* Quantity Selector */}
+                          <div className="flex items-center border border-white/20 rounded-full px-2 py-1 bg-black/20">
+                            <button
+                              onClick={() => updateCartQuantity(item.product.id, -1)}
+                              className="text-white/80 hover:text-[#b7995a] transition-colors p-0.5"
+                              aria-label="Diminuir quantidade"
+                            >
+                              <Minus className="w-3.5 h-3.5" />
+                            </button>
+                            <span className="w-7 text-center text-xs font-bold text-white">
+                              {item.quantity}
+                            </span>
+                            <button
+                              onClick={() => updateCartQuantity(item.product.id, 1)}
+                              className="text-white/80 hover:text-[#b7995a] transition-colors p-0.5"
+                              aria-label="Aumentar quantidade"
+                            >
+                              <Plus className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
+
+                          {/* Item Price Total */}
+                          <span className="font-manrope font-semibold text-sm text-[#b7995a]">
+                            R$ {(item.product.price * item.quantity).toFixed(2).replace('.', ',')}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+
+              {/* Drawer Footer / Checkout CTA */}
+              {cart.length > 0 && (
+                <div className="p-6 border-t border-white/10 bg-[#002b1f] flex flex-col gap-4">
+                  <div className="flex justify-between items-center text-sm">
+                    <span className="text-white/70 font-manrope">Subtotal</span>
+                    <span className="text-xl font-bold font-manrope text-white">
+                      R$ {cartSubtotal.toFixed(2).replace('.', ',')}
+                    </span>
+                  </div>
+
+                  <p className="text-[11px] text-white/60 flex items-center gap-1.5">
+                    <CheckCircle2 className="w-3.5 h-3.5 text-[#b7995a]" />
+                    Frete e descontos calculados com segurança no checkout.
+                  </p>
+
+                  <motion.button
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    onClick={handleCheckout}
+                    className="w-full py-4 rounded-full bg-[#b7995a] text-[#1b3b2c] font-bold text-xs uppercase tracking-widest shadow-xl hover:bg-[#caad6e] transition-all flex items-center justify-center gap-2"
+                  >
+                    <span>Finalizar Compra</span>
+                    <ArrowRight className="w-4 h-4" />
+                  </motion.button>
+
+                  <div className="flex justify-center items-center gap-4 pt-1 text-[10px] text-white/40 uppercase tracking-wider">
+                    <span>Checkout Seguro Yampi</span>
+                    <span>•</span>
+                    <span>Pagamento PIX / Cartão</span>
+                  </div>
+                </div>
+              )}
+            </motion.div>
+          </motion.div>
+        )}
+
         {activeOverlay === "product_detail" && selectedProduct && (
           <motion.div
             key="overlay-product-detail"
