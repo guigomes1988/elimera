@@ -67,7 +67,7 @@ const PRODUCTS: Product[] = [
       "Ácido hialurônico hidratante",
       "Hidratação profunda, cruelty free e livre de parabenos"
     ],
-    image: "/produto-02.png",
+    image: "/glow-lift.webp",
     checkoutUrl: "https://elimera.pay.yampi.com.br/r/50BJSNV0QW",
     price: 129.90,
     token: "50BJSNV0QW",
@@ -84,7 +84,7 @@ const PRODUCTS: Product[] = [
       "Brilho imediato e toque acetinado",
       "Hidratação profunda, cruelty free e livre de parabenos"
     ],
-    image: "/produto-01.png",
+    image: "/gold-lift.webp",
     checkoutUrl: "https://elimera.pay.yampi.com.br/r/4EF7TNQSBD",
     price: 129.90,
     token: "4EF7TNQSBD",
