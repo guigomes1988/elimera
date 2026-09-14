@@ -107,13 +107,32 @@ export default function App() {
   const [cart, setCart] = useState<CartItem[]>(() => {
     try {
       const saved = localStorage.getItem("elimera_cart");
-      return saved ? JSON.parse(saved) : [];
+      if (!saved) return [];
+      const parsed = JSON.parse(saved);
+      if (!Array.isArray(parsed)) return [];
+      return parsed
+        .filter((item) => item && item.product && item.product.id)
+        .map((item) => ({
+          cartItemId: item.cartItemId || item.product.id,
+          product: item.product,
+          quantity: typeof item.quantity === "number" ? item.quantity : 1,
+          selectedVariant: item.selectedVariant,
+        }));
     } catch {
       return [];
     }
   });
   const [isCartOpen, setIsCartOpen] = useState(false);
+  const [cardQuantities, setCardQuantities] = useState<Record<string, number>>({});
   const [selectedVariants, setSelectedVariants] = useState<Record<string, ProductVariant>>({});
+
+  useEffect(() => {
+    try {
+      localStorage.setItem("elimera_cart", JSON.stringify(cart));
+    } catch {
+      // ignore
+    }
+  }, [cart]);
 
   const addToCart = (product: Product, qty: number = 1) => {
     const chosenVariant = product.variants
