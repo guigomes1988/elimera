@@ -4,6 +4,13 @@ import { motion, AnimatePresence } from "motion/react";
 
 type NavItem = "Sobre" | "Produtos" | "Chancela" | "Políticas";
 
+type ProductVariant = {
+  id: string;
+  name: string;
+  token: string;
+  colorHex?: string;
+};
+
 type Product = {
   id: string;
   category: string;
@@ -15,12 +22,15 @@ type Product = {
   checkoutUrl: string;
   price: number;
   token: string;
+  variants?: ProductVariant[];
   skuId?: string;
 };
 
 type CartItem = {
+  cartItemId: string;
   product: Product;
   quantity: number;
+  selectedVariant?: ProductVariant;
 };
 
 const PRODUCTS: Product[] = [
@@ -36,9 +46,13 @@ const PRODUCTS: Product[] = [
       "Cruelty free, livre de parabenos e petrolatos"
     ],
     image: "/produto-03.png",
-    checkoutUrl: "https://elimera.pay.yampi.com.br/r/8XVEIIMKLT",
+    checkoutUrl: "https://elimera.pay.yampi.com.br/r/F7GKY5DFOZ",
     price: 59.90,
-    token: "8XVEIIMKLT",
+    token: "F7GKY5DFOZ",
+    variants: [
+      { id: "nude", name: "Nude", token: "F7GKY5DFOZ", colorHex: "#C48B71" },
+      { id: "vermelho", name: "Vermelho", token: "F8W75VUEPR", colorHex: "#A81C24" }
+    ],
     skuId: "BATOMMATTE"
   },
   {
@@ -99,36 +113,41 @@ export default function App() {
     }
   });
   const [isCartOpen, setIsCartOpen] = useState(false);
-  const [cardQuantities, setCardQuantities] = useState<Record<string, number>>({});
-
-  useEffect(() => {
-    try {
-      localStorage.setItem("elimera_cart", JSON.stringify(cart));
-    } catch {
-      // ignore
-    }
-  }, [cart]);
+  const [selectedVariants, setSelectedVariants] = useState<Record<string, ProductVariant>>({});
 
   const addToCart = (product: Product, qty: number = 1) => {
+    const chosenVariant = product.variants
+      ? selectedVariants[product.id] || product.variants[0]
+      : undefined;
+    const cartItemId = chosenVariant ? `${product.id}-${chosenVariant.id}` : product.id;
+
     setCart((prev) => {
-      const existing = prev.find((item) => item.product.id === product.id);
+      const existing = prev.find((item) => item.cartItemId === cartItemId);
       if (existing) {
         return prev.map((item) =>
-          item.product.id === product.id
+          item.cartItemId === cartItemId
             ? { ...item, quantity: item.quantity + qty }
             : item
         );
       }
-      return [...prev, { product, quantity: qty }];
+      return [
+        ...prev,
+        {
+          cartItemId,
+          product,
+          quantity: qty,
+          selectedVariant: chosenVariant,
+        },
+      ];
     });
     setIsCartOpen(true);
   };
 
-  const updateCartQuantity = (productId: string, delta: number) => {
+  const updateCartQuantity = (cartItemId: string, delta: number) => {
     setCart((prev) =>
       prev
         .map((item) => {
-          if (item.product.id === productId) {
+          if (item.cartItemId === cartItemId) {
             const newQty = item.quantity + delta;
             return newQty > 0 ? { ...item, quantity: newQty } : null;
           }
@@ -138,8 +157,8 @@ export default function App() {
     );
   };
 
-  const removeFromCart = (productId: string) => {
-    setCart((prev) => prev.filter((item) => item.product.id !== productId));
+  const removeFromCart = (cartItemId: string) => {
+    setCart((prev) => prev.filter((item) => item.cartItemId !== cartItemId));
   };
 
   const totalItemsCount = cart.reduce((acc, item) => acc + item.quantity, 0);
@@ -148,10 +167,11 @@ export default function App() {
   const handleCheckout = () => {
     if (cart.length === 0) return;
 
-    // Formata cada item no padrão exato TOKEN:QUANTIDADE (exemplo: 8XVEIIMKLT:1)
-    const formattedItems = cart.map(
-      (item) => `${item.product.token}:${item.quantity}`
-    );
+    // Formata cada item no padrão exato TOKEN:QUANTIDADE (ex: F7GKY5DFOZ:1 ou F8W75VUEPR:2)
+    const formattedItems = cart.map((item) => {
+      const token = item.selectedVariant ? item.selectedVariant.token : item.product.token;
+      return `${token}:${item.quantity}`;
+    });
 
     // Una todos os itens formatados em uma única string, usando vírgula como separador
     const consolidatedItems = formattedItems.join(",");
@@ -774,6 +794,44 @@ export default function App() {
                   )}
                 </AnimatePresence>
 
+                {/* Seletor de Cores (caso o produto possua variações) */}
+                {product.variants && (
+                  <div className="mt-3 mb-1">
+                    <div className="flex items-center justify-between text-[11px] font-semibold text-[#b7995a] uppercase tracking-wider mb-2 font-manrope">
+                      <span>Cor:</span>
+                      <span className="text-[#00563F] font-bold">
+                        {(selectedVariants[product.id] || product.variants[0]).name}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      {product.variants.map((v) => {
+                        const isSelected = (selectedVariants[product.id]?.id || product.variants[0].id) === v.id;
+                        return (
+                          <button
+                            key={v.id}
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setSelectedVariants((prev) => ({ ...prev, [product.id]: v }));
+                            }}
+                            className={`flex-1 flex items-center justify-center gap-1.5 py-1.5 px-3 rounded-full border text-xs font-manrope transition-all ${
+                              isSelected
+                                ? "border-[#b7995a] bg-[#b7995a]/20 text-[#00563F] font-bold shadow-sm"
+                                : "border-[#00563F]/20 text-[#00563F]/70 hover:border-[#b7995a]/50"
+                            }`}
+                          >
+                            <span
+                              className="w-3.5 h-3.5 rounded-full border border-black/15 shrink-0 shadow-inner"
+                              style={{ backgroundColor: v.colorHex }}
+                            />
+                            <span>{v.name}</span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+
                 {/* Seletor de Quantidade + Botão Comprar Agora */}
                 <div className="mt-4 pointer-events-auto flex items-center gap-3">
                   <div className="flex items-center border border-[#00563F]/20 rounded-full px-3 py-2 bg-white/60 shrink-0">
@@ -1322,7 +1380,7 @@ export default function App() {
                 ) : (
                   cart.map((item) => (
                     <div
-                      key={item.product.id}
+                      key={item.cartItemId}
                       className="flex gap-4 p-4 rounded-lg bg-white/5 border border-white/10 relative group"
                     >
                       <img
@@ -1336,14 +1394,14 @@ export default function App() {
                           <div className="flex items-start justify-between gap-2">
                             <div>
                               <span className="text-[9px] font-bold text-[#b7995a] uppercase tracking-widest block">
-                                {item.product.category}
+                                {item.product.category} {item.selectedVariant ? `• COR: ${item.selectedVariant.name}` : ""}
                               </span>
                               <h4 className="font-manrope font-semibold text-base text-white">
-                                {item.product.name}
+                                {item.product.name} {item.selectedVariant ? `(${item.selectedVariant.name})` : ""}
                               </h4>
                             </div>
                             <button
-                              onClick={() => removeFromCart(item.product.id)}
+                              onClick={() => removeFromCart(item.cartItemId)}
                               className="text-white/40 hover:text-red-400 transition-colors p-1"
                               aria-label="Remover item"
                             >
@@ -1359,7 +1417,7 @@ export default function App() {
                           {/* Quantity Selector */}
                           <div className="flex items-center border border-white/20 rounded-full px-2 py-1 bg-black/20">
                             <button
-                              onClick={() => updateCartQuantity(item.product.id, -1)}
+                              onClick={() => updateCartQuantity(item.cartItemId, -1)}
                               className="text-white/80 hover:text-[#b7995a] transition-colors p-0.5"
                               aria-label="Diminuir quantidade"
                             >
@@ -1369,7 +1427,7 @@ export default function App() {
                               {item.quantity}
                             </span>
                             <button
-                              onClick={() => updateCartQuantity(item.product.id, 1)}
+                              onClick={() => updateCartQuantity(item.cartItemId, 1)}
                               className="text-white/80 hover:text-[#b7995a] transition-colors p-0.5"
                               aria-label="Aumentar quantidade"
                             >
