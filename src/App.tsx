@@ -14,6 +14,7 @@ type Product = {
   image: string;
   checkoutUrl: string;
   price: number;
+  token: string;
   skuId?: string;
 };
 
@@ -37,6 +38,7 @@ const PRODUCTS: Product[] = [
     image: "/produto-03.png",
     checkoutUrl: "https://elimera.pay.yampi.com.br/r/8XVEIIMKLT",
     price: 59.90,
+    token: "8XVEIIMKLT",
     skuId: "BATOMMATTE"
   },
   {
@@ -53,6 +55,7 @@ const PRODUCTS: Product[] = [
     image: "/produto-02.png",
     checkoutUrl: "https://elimera.pay.yampi.com.br/r/50BJSNV0QW",
     price: 129.90,
+    token: "50BJSNV0QW",
     skuId: "GLOWLIFT"
   },
   {
@@ -69,6 +72,7 @@ const PRODUCTS: Product[] = [
     image: "/produto-01.png",
     checkoutUrl: "https://elimera.pay.yampi.com.br/r/4EF7TNQSBD",
     price: 129.90,
+    token: "4EF7TNQSBD",
     skuId: "GOLDLIFT"
   }
 ];
@@ -144,9 +148,19 @@ export default function App() {
   const handleCheckout = () => {
     if (cart.length === 0) return;
 
-    // Redireciona para a URL de oferta direta e 100% funcional da Yampi do primeiro produto do carrinho
-    const targetUrl = cart[0].product.checkoutUrl;
-    window.open(targetUrl, "_blank");
+    // Formata cada item no padrão exato TOKEN:QUANTIDADE (exemplo: 8XVEIIMKLT:1)
+    const formattedItems = cart.map(
+      (item) => `${item.product.token}:${item.quantity}`
+    );
+
+    // Una todos os itens formatados em uma única string, usando vírgula como separador
+    const consolidatedItems = formattedItems.join(",");
+
+    // Concatena essa string à URL base da Yampi: https://elimera.pay.yampi.com.br/r/
+    const finalUrl = `https://elimera.pay.yampi.com.br/r/${consolidatedItems}`;
+
+    // Executa o redirecionamento (window.location.href)
+    window.location.href = finalUrl;
   };
 
   useEffect(() => {
@@ -293,8 +307,23 @@ export default function App() {
             })}
           </div>
 
-          {/* Action CTA Button */}
-          <div id="desktop-cta" className="hidden md:block">
+          {/* Action CTA & Cart Button */}
+          <div id="desktop-cta" className="hidden md:flex items-center gap-4">
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={() => setIsCartOpen(true)}
+              className="relative p-2.5 rounded-full border border-[#b7995a]/40 text-[#b7995a] hover:bg-[#b7995a]/10 hover:text-white transition-all duration-300 flex items-center justify-center cursor-pointer"
+              aria-label="Abrir Carrinho"
+            >
+              <ShoppingBag className="w-5 h-5" />
+              {totalItemsCount > 0 && (
+                <span className="absolute -top-1.5 -right-1.5 bg-[#b7995a] text-[#1b3b2c] font-black text-[10px] w-5 h-5 rounded-full flex items-center justify-center shadow-lg">
+                  {totalItemsCount}
+                </span>
+              )}
+            </motion.button>
+
             <motion.button
               id="cta-nav"
               whileHover={{ scale: 1.04, backgroundColor: "#caad6e" }}
@@ -309,8 +338,21 @@ export default function App() {
             </motion.button>
           </div>
 
-          {/* Mobile Menu Trigger */}
-          <div id="mobile-menu-trigger" className="md:hidden flex items-center">
+          {/* Mobile Menu & Cart Trigger */}
+          <div id="mobile-menu-trigger" className="md:hidden flex items-center gap-3">
+            <button
+              onClick={() => setIsCartOpen(true)}
+              className="relative p-2 text-[#b7995a] hover:text-white transition-colors"
+              aria-label="Abrir Carrinho"
+            >
+              <ShoppingBag className="w-6 h-6" />
+              {totalItemsCount > 0 && (
+                <span className="absolute -top-1 -right-1 bg-[#b7995a] text-[#1b3b2c] font-extrabold text-[10px] w-4 h-4 rounded-full flex items-center justify-center">
+                  {totalItemsCount}
+                </span>
+              )}
+            </button>
+
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
               className="text-white hover:text-[#b7995a] transition-colors p-1 focus:outline-none"
@@ -770,11 +812,7 @@ export default function App() {
                     onClick={(e) => {
                       e.stopPropagation();
                       const qty = cardQuantities[product.id] || 1;
-                      let checkoutUrl = product.checkoutUrl;
-                      if (qty > 1) {
-                        checkoutUrl += `?quantity=${qty}`;
-                      }
-                      window.open(checkoutUrl, "_blank");
+                      addToCart(product, qty);
                     }}
                     className="flex-1 inline-flex items-center justify-center gap-2 rounded-full py-3 px-6 text-xs uppercase tracking-widest font-bold bg-[#b7995a] text-[#1b3b2c] shadow-md hover:shadow-lg transition-all duration-300 focus:outline-none"
                   >
