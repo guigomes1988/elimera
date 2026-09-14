@@ -52,7 +52,7 @@ const PRODUCTS: Product[] = [
     token: "F7GKY5DFOZ",
     variants: [
       { id: "nude", name: "Nude", token: "F7GKY5DFOZ", colorHex: "#C48B71", image: "/batom-nude.webp" },
-      { id: "vermelho", name: "Vermelho", token: "F8W75VUEPR", colorHex: "#A81C24", image: "/batom-vermelho.png" }
+      { id: "vermelho", name: "Vermelho", token: "F8W75VUEPR", colorHex: "#A81C24", image: "/batom-vermelho.webp" }
     ],
     skuId: "BATOMMATTE"
   },
