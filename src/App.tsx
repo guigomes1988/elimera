@@ -36,7 +36,7 @@ const PRODUCTS: Product[] = [
     ],
     image: "/produto-03.png",
     checkoutUrl: "https://elimera.pay.yampi.com.br/r/8XVEIIMKLT",
-    price: 89.90,
+    price: 59.90,
     skuId: "BATOMMATTE"
   },
   {
@@ -52,7 +52,7 @@ const PRODUCTS: Product[] = [
     ],
     image: "/produto-02.png",
     checkoutUrl: "https://elimera.pay.yampi.com.br/r/50BJSNV0QW",
-    price: 149.90,
+    price: 129.90,
     skuId: "GLOWLIFT"
   },
   {
@@ -68,7 +68,7 @@ const PRODUCTS: Product[] = [
     ],
     image: "/produto-01.png",
     checkoutUrl: "https://elimera.pay.yampi.com.br/r/4EF7TNQSBD",
-    price: 159.90,
+    price: 129.90,
     skuId: "GOLDLIFT"
   }
 ];
