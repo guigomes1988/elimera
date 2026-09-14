@@ -9,6 +9,7 @@ type ProductVariant = {
   name: string;
   token: string;
   colorHex?: string;
+  image?: string;
 };
 
 type Product = {
@@ -45,13 +46,13 @@ const PRODUCTS: Product[] = [
       "Com ácido hialurônico",
       "Cruelty free, livre de parabenos e petrolatos"
     ],
-    image: "/produto-03.png",
+    image: "/batom-nude.webp",
     checkoutUrl: "https://elimera.pay.yampi.com.br/r/F7GKY5DFOZ",
     price: 59.90,
     token: "F7GKY5DFOZ",
     variants: [
-      { id: "nude", name: "Nude", token: "F7GKY5DFOZ", colorHex: "#C48B71" },
-      { id: "vermelho", name: "Vermelho", token: "F8W75VUEPR", colorHex: "#A81C24" }
+      { id: "nude", name: "Nude", token: "F7GKY5DFOZ", colorHex: "#C48B71", image: "/batom-nude.webp" },
+      { id: "vermelho", name: "Vermelho", token: "F8W75VUEPR", colorHex: "#A81C24", image: "/batom-vermelho.png" }
     ],
     skuId: "BATOMMATTE"
   },
@@ -751,7 +752,7 @@ export default function App() {
               <div key={product.id} className="flex flex-col group block cursor-pointer">
                 <div className="relative w-full aspect-[3/4] sm:aspect-[4/5] bg-[#edf0eb] overflow-hidden mb-6 rounded-sm">
                   <img 
-                    src={product.image} 
+                    src={selectedVariants[product.id]?.image || product.image} 
                     alt={product.name} 
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
                     referrerPolicy="no-referrer"
@@ -1403,7 +1404,7 @@ export default function App() {
                       className="flex gap-4 p-4 rounded-lg bg-white/5 border border-white/10 relative group"
                     >
                       <img
-                        src={item.product.image}
+                        src={item.selectedVariant?.image || item.product.image}
                         alt={item.product.name}
                         className="w-20 h-24 object-cover rounded-md bg-[#edf0eb] shrink-0"
                         referrerPolicy="no-referrer"
